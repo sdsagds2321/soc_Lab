@@ -51,7 +51,7 @@ begin
     end process;
 
     -- Counter1 process
-    counter1:process(i_clk, i_rst, state)
+    counter1:process(i_clk, i_rst)
     begin
         if i_rst = '0' then
             count1 <= (others => '0'); -- 重置計數器
@@ -72,14 +72,14 @@ begin
     end process;
 
     -- Counter2 process
-    counter2:process(i_clk, i_rst, state)
+    counter2:process(i_clk, i_rst)
     begin
         if i_rst = '0' then
             count2 <= "11111101"; -- 初始化為253
         elsif rising_edge(i_clk) then
             case state is
                 when s3 =>
-                    count2 <= "11111110"; -- 設定為254
+                    count2 <= "11111101"; -- 重置為253而不是254
                 when s1 =>
                     if count2 > "00000000" then -- 限制最小值為 0
                         count2 <= count2 - 1; -- 正常減法
@@ -93,7 +93,7 @@ begin
     end process;
 
     -- Counter3 process
-    counter3:process(i_clk, i_rst, state)
+    counter3:process(i_clk, i_rst)
     begin
         if i_rst = '0' then
             count3 <= (others => '0'); -- 重置計數器

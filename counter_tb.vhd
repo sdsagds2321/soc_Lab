@@ -26,6 +26,12 @@ architecture testbench of counter_tb is
     -- Clock period
     constant clk_period : time := 10 ns;
     
+    -- Helper function to convert std_logic_vector to integer
+    function to_integer(slv : std_logic_vector) return integer is
+    begin
+        return to_integer(unsigned(slv));
+    end function;
+    
 begin
     -- Instantiate the Unit Under Test (UUT)
     uut: counter Port map (
@@ -48,16 +54,61 @@ begin
     -- Stimulus process
     stim_proc: process
     begin
-        -- Reset
+        -- Test reset behavior
         rst <= '0';
         wait for 20 ns;
+        
+        -- Expected initial values after reset:
+        -- count1 = 0, count2 = 253, count3 = 0
+        -- state = s0
+        
         rst <= '1';
-        wait for 20 ns;
+        wait for clk_period;
         
-        -- Let it run and observe behavior
-        wait for 2000 ns;
+        -- State s0: count1 should increment from 0 to 8
+        -- Expected: count1 increases, count2 stays 253, count3 stays 0
+        for i in 1 to 10 loop
+            wait for clk_period;
+            -- Report values for debugging
+            report "Cycle " & integer'image(i) & 
+                   ": count1=" & integer'image(to_integer(count1_out)) &
+                   ", count2=" & integer'image(to_integer(count2_out)) &
+                   ", count3=" & integer'image(to_integer(count3_out));
+        end loop;
         
-        -- End simulation
+        -- State s2: count3 should increment from 0 to 10, count1 reset to 0
+        -- Expected: count1 = 0, count2 = 253, count3 increases
+        for i in 1 to 15 loop
+            wait for clk_period;
+            report "S2 Cycle " & integer'image(i) & 
+                   ": count1=" & integer'image(to_integer(count1_out)) &
+                   ", count2=" & integer'image(to_integer(count2_out)) &
+                   ", count3=" & integer'image(to_integer(count3_out));
+        end loop;
+        
+        -- State s1: count2 should decrement from 253 to 80, count3 reset to 0
+        -- Expected: count1 = 0, count2 decreases, count3 = 0
+        for i in 1 to 180 loop
+            wait for clk_period;
+            if i mod 20 = 0 then  -- Report every 20 cycles
+                report "S1 Cycle " & integer'image(i) & 
+                       ": count1=" & integer'image(to_integer(count1_out)) &
+                       ", count2=" & integer'image(to_integer(count2_out)) &
+                       ", count3=" & integer'image(to_integer(count3_out));
+            end if;
+        end loop;
+        
+        -- State s3: count2 should reset to 253
+        -- Expected: count1 = 0, count2 = 253, count3 = 0
+        for i in 1 to 5 loop
+            wait for clk_period;
+            report "S3 Cycle " & integer'image(i) & 
+                   ": count1=" & integer'image(to_integer(count1_out)) &
+                   ", count2=" & integer'image(to_integer(count2_out)) &
+                   ", count3=" & integer'image(to_integer(count3_out));
+        end loop;
+        
+        report "Testbench completed";
         wait;
     end process;
     
